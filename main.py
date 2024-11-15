@@ -66,18 +66,54 @@ import asyncio
 from IPython.display import clear_output
 from pprint import pprint
 
-stream_output = sllm.stream_chat([input_msg])
-for partial_output in stream_output:
-    clear_output(wait=True)
-    pprint(partial_output.raw.dict())
-
-output_obj = partial_output.raw
-print(str(output))
-
-### ASYNC STREAMING ###
-# from IPython.display import clear_output
-
-# stream_output = await sllm.astream_chat([input_msg])
-# async for partial_output in stream_output:
+# stream_output = sllm.stream_chat([input_msg])
+# for partial_output in stream_output:
 #     clear_output(wait=True)
 #     pprint(partial_output.raw.dict())
+
+# output_obj = partial_output.raw
+# print(str(output))
+
+### ASYNC STREAMING ###
+# async def main():
+#     stream_output = await sllm.astream_chat([input_msg])
+#     async for partial_output in stream_output:
+#         clear_output(wait=True)
+#         pprint(partial_output.raw.dict())
+
+# asyncio.run(main())
+
+### QUERY PIPELINES ###
+from llama_index.core.prompts import ChatPromptTemplate
+from llama_index.core.query_pipeline import QueryPipeline as QP
+from llama_index.core.llms import ChatMessage
+
+# chat_prompt_tmpl = ChatPromptTemplate(
+#     message_templates=[
+#         ChatMessage.from_str(
+#             "Generate an example album from {movie_name}", role="user"
+#         )
+#     ]
+# )
+
+# qp = QP(chain=[chat_prompt_tmpl, sllm])
+# try:
+#     response = qp.run(movie_name="Inside Out")
+#     print(response)
+# except Exception as e:
+#     print(f"An error occurred: {e}")
+
+### Using structured_predict Function ###
+chat_prompt_tmpl = ChatPromptTemplate(
+    message_templates=[
+        ChatMessage.from_str(
+            "Generate an example album from {movie_name}", role="user"
+        )
+    ]
+)
+
+llm = OpenAI(model="gpt-4o")
+album = llm.structured_predict(
+    Album, chat_prompt_tmpl, movie_name="Lord of the Rings"
+)
+album
